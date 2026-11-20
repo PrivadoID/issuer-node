@@ -121,6 +121,7 @@ func (s *Server) CreateCredential(ctx context.Context, request CreateCredentialR
 			services.ErrDisplayMethodLacksURL,
 			services.ErrUnsupportedDisplayMethodType,
 			services.ErrWrongCredentialSubjectID,
+			services.ErrEncryptionKeyLacksKID,
 			&schema.ParseClaimError{},
 		}
 		for _, e := range errs {

@@ -71,6 +71,54 @@ func TestSaveCredential(t *testing.T) {
 		assert.NotEqual(t, pgtype.Null, credential.SignatureProof.Status)
 	})
 
+	t.Run("reject encryption key without kid", func(t *testing.T) {
+		// Holders (iden3comm jwe.Decrypt, js-sdk JoseService) look up their
+		// decryption key by kid, so a credential encrypted without one can't be opened.
+		for _, tc := range []struct {
+			name string
+			kid  any // nil = omit
+		}{
+			{name: "kid missing", kid: nil},
+			{name: "kid empty", kid: ""},
+			{name: "kid not a string", kid: 123},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				claimId := uuid.New()
+				encryptionKey := map[string]interface{}{
+					"kty": "EC",
+					"crv": "P-256",
+					"alg": "ECDH-ES+A256KW",
+					"use": "enc",
+					"x":   "nw7Ag_FszrDu1uPi2lX3TtbF7FMZoysXZXUzrKxBwiQ",
+					"y":   "l1I0EONJmEHMz7Nc4WQULDllKdPdjbTgHS5hCbqv0UQ",
+				}
+				if tc.kid != nil {
+					encryptionKey["kid"] = tc.kid
+				}
+				req := &ports.CreateClaimRequest{
+					ClaimID: &claimId,
+					DID:     did,
+					Schema:  "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json/KYCAgeCredential-v3.json",
+					Type:    "KYCAgeCredential",
+					CredentialSubject: map[string]any{
+						"id":           "did:polygonid:polygon:mumbai:2qFDkNkWePjd6URt6kGQX14a7wVKhBZt8bpy7HZJZi",
+						"birthday":     19960425,
+						"documentType": 2,
+					},
+					Expiration:     common.ToPointer(time.Now().Add(365 * 24 * time.Hour)),
+					SignatureProof: true,
+					Version:        0,
+					RevNonce:       common.ToPointer[uint64](100),
+					EncryptionKey:  encryptionKey,
+				}
+
+				credential, err := claimsService.Save(ctx, req)
+				assert.ErrorIs(t, err, ErrEncryptionKeyLacksKID)
+				assert.Nil(t, credential)
+			})
+		}
+	})
+
 	t.Run("save non encrypted credential", func(t *testing.T) {
 		claimId := uuid.New()
 		req := &ports.CreateClaimRequest{
