@@ -50,6 +50,7 @@ var (
 	ErrCredentialNotFound                = errors.New("credential not found")                                          // ErrCredentialNotFound Cannot retrieve the given claim
 	ErrDisplayMethodLacksURL             = errors.New("credential request with display method lacks url")              // ErrDisplayMethodLacksURL means the credential request includes a display method, but the url is not set
 	ErrEmptyMTPProof                     = errors.New("mtp credentials must have a mtp proof to be fetched")           // ErrEmptyMTPProof means that a credential of MTP type can not be fetched if it does not contain the proof
+	ErrEncryptionKeyLacksKID             = errors.New("credential request with encryption key lacks kid")              // ErrEncryptionKeyLacksKID means the credential request includes an encryption key without a kid, so holders could not find their decryption key
 	ErrJSONLdContext                     = errors.New("jsonLdContext must be a string")                                // ErrJSONLdContext Field jsonLdContext must be a string
 	ErrInvalidCredentialSubject          = errors.New("credential subject does not match the provided schema")         // ErrInvalidCredentialSubject means the credentialSubject does not match the schema provided
 	ErrLinkNotFound                      = errors.New("link not found")                                                // ErrLinkNotFound Cannot get the given link from the DB
@@ -1009,6 +1010,16 @@ func (c *claim) guardCreateClaimRequest(req *ports.CreateClaimRequest) error {
 			default:
 				return ErrUnsupportedDisplayMethodType
 			}
+		},
+		// check encryption key has a kid: holders look up their decryption key by it
+		func() error {
+			if req.EncryptionKey == nil {
+				return nil
+			}
+			if kid, ok := req.EncryptionKey["kid"].(string); !ok || kid == "" {
+				return ErrEncryptionKeyLacksKID
+			}
+			return nil
 		},
 		// check identity
 		func() error {

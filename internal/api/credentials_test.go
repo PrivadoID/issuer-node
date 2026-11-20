@@ -466,6 +466,33 @@ func TestServer_CreateCredential(t *testing.T) {
 				createCredentialEventsCount: 1,
 			},
 		},
+		{
+			name: "Encryption key without kid",
+			auth: authOk,
+			did:  did,
+			body: CreateCredentialRequest{
+				CredentialSchema: "ipfs://QmQVeb5dkz5ekDqBrYVVxBFQZoCbzamnmMUn9B8twCEgDL",
+				Type:             "testNewType",
+				CredentialSubject: map[string]any{
+					"id":             "did:polygonid:polygon:mumbai:2qFDkNkWePjd6URt6kGQX14a7wVKhBZt8bpy7HZJZi",
+					"testNewTypeInt": 1234,
+				},
+				Expiration: common.ToPointer(time.Now().Unix()),
+				EncryptionKey: &map[string]interface{}{
+					"kty": "EC",
+					"crv": "P-256",
+					"alg": "ECDH-ES+A256KW",
+					"use": "enc",
+					"x":   "nw7Ag_FszrDu1uPi2lX3TtbF7FMZoysXZXUzrKxBwiQ",
+					"y":   "l1I0EONJmEHMz7Nc4WQULDllKdPdjbTgHS5hCbqv0UQ",
+				},
+			},
+			expected: expected{
+				response:                    CreateCredential400JSONResponse{N400JSONResponse{Message: "credential request with encryption key lacks kid"}},
+				httpCode:                    http.StatusBadRequest,
+				createCredentialEventsCount: 0,
+			},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			server.Infra.pubSub.Clear(event.CreateCredentialEvent)
