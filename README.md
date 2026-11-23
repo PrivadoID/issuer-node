@@ -129,7 +129,8 @@ cp .env-issuer.sample .env-issuer
 *.env-issuer*
 ```bash
 ISSUER_SERVER_URL=<PUBLICLY_ACCESSIBLE_URL_POINTING_TO_ISSUER_SERVER_PORT>
-# API Auth credentials - You can change these values
+# API Auth credentials - You can change these values. Set both: leaving both empty disables API
+# authentication, and setting only one of them stops the issuer node from starting.
 ISSUER_API_AUTH_USER=user-issuer
 ISSUER_API_AUTH_PASSWORD=password-issuer
 ```

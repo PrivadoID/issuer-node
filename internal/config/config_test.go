@@ -150,6 +150,39 @@ func TestLoad(t *testing.T) {
 	assert.True(t, *cfg.MediaTypeManager.Enabled)
 }
 
+func TestLoadHTTPBasicAuth(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		user     string
+		password string
+		wantErr  bool
+	}{
+		{name: "user and password set", user: "user-issuer", password: "password-issuer"},
+		{name: "user and password empty disable auth", user: "", password: ""},
+		{name: "password empty", user: "user-issuer", password: "", wantErr: true},
+		{name: "user empty", user: "", password: "password-issuer", wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			envVars := initVariables(t)
+			envVars["ISSUER_API_AUTH_USER"] = tc.user
+			envVars["ISSUER_API_AUTH_PASSWORD"] = tc.password
+			loadEnvironmentVariables(t, envVars)
+
+			cfg, err := Load()
+
+			if tc.wantErr {
+				assert.ErrorContains(t, err, "ISSUER_API_AUTH_USER and ISSUER_API_AUTH_PASSWORD")
+				assert.Nil(t, cfg)
+				return
+			}
+			if assert.NoError(t, err) {
+				assert.Equal(t, tc.user, cfg.HTTPBasicAuth.User)
+				assert.Equal(t, tc.password, cfg.HTTPBasicAuth.Password)
+			}
+		})
+	}
+}
+
 func TestLoadKmsProviders(t *testing.T) {
 	envVars := initVariables(t)
 	envVars["ISSUER_KMS_BJJ_PROVIDER"] = ""
