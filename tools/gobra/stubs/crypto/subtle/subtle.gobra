@@ -1,0 +1,19 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in https://golang.org/LICENSE
+
+// Gobra stub for the crypto/subtle function used by internal/basicauth.
+// Gobra assumes this specification without proof. It restates the documented
+// contract of https://pkg.go.dev/crypto/subtle#ConstantTimeCompare:
+// "ConstantTimeCompare returns 1 if the two slices, x and y, have equal contents
+// and 0 otherwise."
+package subtle
+
+requires forall i int :: 0 <= i && i < len(x) ==> acc(&x[i], _)
+requires forall i int :: 0 <= i && i < len(y) ==> acc(&y[i], _)
+ensures forall i int :: 0 <= i && i < len(x) ==> acc(&x[i], _)
+ensures forall i int :: 0 <= i && i < len(y) ==> acc(&y[i], _)
+ensures res == 0 || res == 1
+ensures res == 1 == (string(x) == string(y))
+decreases
+func ConstantTimeCompare(x, y []byte) (res int)
