@@ -181,7 +181,7 @@ type Log struct {
 }
 
 // HTTPBasicAuth configuration. Some of the endpoints are protected with basic http auth. Here you can set the
-// user and password to use.
+// user and password to use. Leaving both empty disables basic auth; setting only one of them is a configuration error.
 type HTTPBasicAuth struct {
 	User     string `env:"ISSUER_API_AUTH_USER" envDefault:""`
 	Password string `env:"ISSUER_API_AUTH_PASSWORD" envDefault:""`
@@ -294,12 +294,12 @@ func checkEnvVars(ctx context.Context, cfg *Configuration) error {
 		log.Info(ctx, "ISSUER_DATABASE_URL value is missing")
 	}
 
-	if cfg.HTTPBasicAuth.User == "" {
-		log.Info(ctx, "ISSUER_API_AUTH_USER value is missing")
-	}
-
-	if cfg.HTTPBasicAuth.Password == "" {
-		log.Info(ctx, "ISSUER_API_AUTH_PASSWORD value is missing")
+	switch {
+	case cfg.HTTPBasicAuth.User == "" && cfg.HTTPBasicAuth.Password == "":
+		log.Warn(ctx, "ISSUER_API_AUTH_USER and ISSUER_API_AUTH_PASSWORD are empty: basic auth is disabled and API endpoints that require it accept unauthenticated requests")
+	case cfg.HTTPBasicAuth.User == "" || cfg.HTTPBasicAuth.Password == "":
+		log.Error(ctx, "only one of ISSUER_API_AUTH_USER and ISSUER_API_AUTH_PASSWORD is set")
+		return errors.New("ISSUER_API_AUTH_USER and ISSUER_API_AUTH_PASSWORD must both be set, or both be empty to disable basic auth")
 	}
 
 	if cfg.KeyStore.Address == "" {
