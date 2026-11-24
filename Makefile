@@ -210,6 +210,16 @@ lint: $(BIN)/golangci-lint
 lint-fix: $(BIN)/golangci-lint
 		  $(BIN)/golangci-lint run --fix
 
+# Formal verification with Gobra, run from its container image. See tools/gobra/README.md.
+# Use CONTAINER_ENGINE=podman to run it with podman.
+GOBRA_IMAGE := ghcr.io/viperproject/gobra:v26.09
+CONTAINER_ENGINE ?= docker
+
+.PHONY: verify
+verify:
+	$(CONTAINER_ENGINE) run --rm --security-opt label=disable -v $(shell pwd):/src:ro $(GOBRA_IMAGE) \
+		--include /src/tools/gobra/stubs -i /src/internal/basicauth/basicauth.go
+
 ## Usage:
 ## make private_key=XXX import-private-key-to-kms
 .PHONY: import-private-key-to-kms
