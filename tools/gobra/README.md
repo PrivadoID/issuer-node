@@ -28,6 +28,8 @@ make verify CONTAINER_ENGINE=podman  # with podman
 It takes a few seconds. Success ends with `Gobra found 0 errors.` and exit code 0. If a property doesn't hold,
 Gobra names it and exits with code 1.
 
+CI runs `make verify` on every push, in `.github/workflows/formal-verification.yml`.
+
 ## What is assumed, not proved
 
 - `tools/gobra/stubs/crypto/subtle/subtle.gobra` gives `subtle.ConstantTimeCompare` the contract from its Go

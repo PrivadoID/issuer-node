@@ -1,0 +1,22 @@
+name: Formal verification
+
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  gobra:
+    name: Gobra (make verify)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # The Makefile includes .env-issuer, which isn't committed.
+      - name: Create .env-issuer file
+        run: touch .env-issuer
+
+      # Proves the properties of internal/basicauth. See tools/gobra/README.md.
+      - name: Verify with Gobra
+        run: make verify
