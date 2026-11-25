@@ -679,7 +679,9 @@ func TestServer_CreatePaymentRequest(t *testing.T) {
 			assert.NoError(t, err)
 			req.SetBasicAuth(tc.auth())
 
+			before := time.Now()
 			handler.ServeHTTP(rr, req)
+			after := time.Now()
 			require.Equal(t, tc.expected.httpCode, rr.Code)
 
 			switch tc.expected.httpCode {
@@ -689,7 +691,7 @@ func TestServer_CreatePaymentRequest(t *testing.T) {
 				assert.NotEqual(t, uuid.Nil, response.Id)
 				assert.Equal(t, tc.expected.resp.IssuerDID, response.IssuerDID)
 				assert.Equal(t, tc.expected.resp.UserDID, response.UserDID)
-				assert.InDelta(t, time.Now().UnixMilli(), response.CreatedAt.UnixMilli(), 100)
+				assert.WithinRange(t, response.CreatedAt, before, after)
 				/*
 					assert.Equal(t, len(tc.expected.resp.Payments), len(response.Payments))
 					for i := range tc.expected.resp.Payments {
