@@ -2,7 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import { ID, IDParser, Message, buildAuthorizationHeader, messageParser } from "src/adapters/api";
+import { ID, IDParser, Message, messageParser } from "src/adapters/api";
 import { getResourceParser, getStrictParser } from "src/adapters/parsers";
 import { Env, Key, KeyType } from "src/domain";
 import { API_VERSION } from "src/utils/constants";
@@ -36,9 +36,6 @@ export async function getKeys({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(maxResults !== undefined ? { max_results: maxResults.toString() } : {}),
@@ -68,9 +65,6 @@ export async function getKey({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/keys/${keyID}`,
@@ -99,9 +93,6 @@ export async function createKey({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/keys`,
     });
@@ -130,9 +121,6 @@ export async function updateKeyName({
     await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "PATCH",
       url: `${API_VERSION}/identities/${identifier}/keys/${keyID}`,
     });
@@ -155,9 +143,6 @@ export async function deleteKey({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       url: `${API_VERSION}/identities/${identifier}/keys/${keyID}`,
     });

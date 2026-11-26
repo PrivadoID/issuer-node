@@ -8,9 +8,7 @@ import { Env } from "src/domain";
 
 const defaultEnvContext: Env = {
   api: {
-    password: "",
     url: "",
-    username: "",
   },
   baseUrl: "",
   displayMethodBuilderUrl: "",

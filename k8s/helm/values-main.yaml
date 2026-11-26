@@ -9,7 +9,10 @@ issuernode_ui_repository_image: 654654630007.dkr.ecr.eu-west-1.amazonaws.com/iss
 issuernode_ui_repository_tag: latest  # overridden by --set issuernode_ui_repository_tag in workflow
 
 issuerName: "Privado ID - Demo"
-issuerUiInsecure: "true"
+# Keep false: the UI and its /api/ proxy require the UI login (issuerUiAuthUsername / uiPassword).
+# true turns the login off, so anyone who can open the UI can use the whole issuer API through it
+# (identities, credentials, keys, payments). Public demos only, never for a real issuer.
+issuerUiInsecure: false
 uiPassword: ""  # set via --set-literal uiPassword in workflow (secret: ISSUER_NODE_UI_AUTH_PASSWORD)
 ingressEnabled: true
 issuerResolverFile: ""  # set via --set-literal issuerResolverFile in workflow (secret: ISSUER_NODE_RESOLVER_FILE)

@@ -2,7 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import { ID, IDParser, Message, buildAuthorizationHeader, messageParser } from "src/adapters/api";
+import { ID, IDParser, Message, messageParser } from "src/adapters/api";
 import {
   datetimeParser,
   getListParser,
@@ -99,9 +99,6 @@ export async function getPaymentOptions({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(maxResults !== undefined ? { max_results: maxResults.toString() } : {}),
@@ -131,9 +128,6 @@ export async function createPaymentOption({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/payment/options`,
     });
@@ -158,9 +152,6 @@ export async function updatePaymentOption({
     await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "PATCH",
       url: `${API_VERSION}/identities/${identifier}/payment/options/${paymentOptionID}`,
     });
@@ -185,9 +176,6 @@ export async function getPaymentOption({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/payment/options/${paymentOptionID}`,
@@ -210,9 +198,6 @@ export async function deletePaymentOption({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       url: `${API_VERSION}/identities/${identifier}/payment/options/${paymentOptionID}`,
     });
@@ -232,9 +217,6 @@ export async function getPaymentConfigurations({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/payment/settings`,
@@ -257,9 +239,6 @@ export async function getPaymentRequests({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/payment-request`,
@@ -284,9 +263,6 @@ export async function getPaymentRequest({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/payment-request/${paymentRequestID}`,

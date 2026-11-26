@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { getStrictParser } from "src/adapters/parsers";
-import { Env } from "src/domain";
 
 export type Sorter = { field: string; order: "ascend" | "descend" };
 
@@ -29,7 +28,3 @@ export type Message = {
 };
 
 export const messageParser = getStrictParser<Message>()(z.object({ message: z.string() }));
-
-export function buildAuthorizationHeader(env: Env) {
-  return `Basic ${window.btoa(`${env.api.username}:${env.api.password}`)}`;
-}

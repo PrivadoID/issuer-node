@@ -187,6 +187,22 @@ type HTTPBasicAuth struct {
 	Password string `env:"ISSUER_API_AUTH_PASSWORD" envDefault:""`
 }
 
+// Validate returns an error unless both the user and the password are set. The API server must not start
+// without them: the protected endpoints would have no authentication at all.
+func (a HTTPBasicAuth) Validate() error {
+	var missing []string
+	if a.User == "" {
+		missing = append(missing, "ISSUER_API_AUTH_USER")
+	}
+	if a.Password == "" {
+		missing = append(missing, "ISSUER_API_AUTH_PASSWORD")
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("%s must be set: the API does not start without basic auth credentials", strings.Join(missing, " and "))
+	}
+	return nil
+}
+
 // MediaTypeManager enables or disables the media types manager
 type MediaTypeManager struct {
 	Enabled *bool `env:"ISSUER_MEDIA_TYPE_MANAGER_ENABLED"`
@@ -292,14 +308,6 @@ func checkEnvVars(ctx context.Context, cfg *Configuration) error {
 
 	if cfg.Database.URL == "" {
 		log.Info(ctx, "ISSUER_DATABASE_URL value is missing")
-	}
-
-	if cfg.HTTPBasicAuth.User == "" {
-		log.Info(ctx, "ISSUER_API_AUTH_USER value is missing")
-	}
-
-	if cfg.HTTPBasicAuth.Password == "" {
-		log.Info(ctx, "ISSUER_API_AUTH_PASSWORD value is missing")
 	}
 
 	if cfg.KeyStore.Address == "" {

@@ -2,7 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import { ID, IDParser, Message, buildAuthorizationHeader, messageParser } from "src/adapters/api";
+import { ID, IDParser, Message, messageParser } from "src/adapters/api";
 import { datetimeParser, getListParser, getStrictParser } from "src/adapters/parsers";
 import { ApiSchema, Env, JsonLdType } from "src/domain";
 import { getStorageByKey } from "src/utils/browser";
@@ -56,9 +56,6 @@ export async function importSchema({
         url: schemaUrl,
         version: version !== undefined ? version : null,
       },
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/schemas`,
     });
@@ -82,9 +79,6 @@ export async function getApiSchema({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/schemas/${schemaID}`,
@@ -111,9 +105,6 @@ export async function getApiSchemas({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(query !== undefined ? { [QUERY_SEARCH_PARAM]: query } : {}),
@@ -153,9 +144,6 @@ export async function updateSchema({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "PATCH",
       url: `${API_VERSION}/identities/${identifier}/schemas/${schemaID}`,
     });

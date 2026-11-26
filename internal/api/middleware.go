@@ -31,7 +31,11 @@ func LogMiddleware(ctx context.Context) StrictMiddlewareFunc {
 func BasicAuthMiddleware(ctx context.Context, user, pass string) StrictMiddlewareFunc {
 	return func(f StrictHandlerFunc, operationID string) StrictHandlerFunc {
 		return func(ctxReq context.Context, w http.ResponseWriter, r *http.Request, args interface{}) (interface{}, error) {
-			if ctxReq.Value(BasicAuthScopes) != nil && user != "" && pass != "" {
+			if ctxReq.Value(BasicAuthScopes) != nil {
+				// Fail closed: without configured credentials, nobody gets in.
+				if user == "" || pass == "" {
+					return nil, apiErrors.AuthError{Err: errors.New("unauthorized")}
+				}
 				userReq, passReq, ok := r.BasicAuth()
 				if !ok {
 					return nil, apiErrors.AuthError{Err: errors.New("unauthorized")}

@@ -1,0 +1,30 @@
+# Included by nginx.conf and nginx_insecure.conf. scripts/configure-nginx.sh fills in the ${...} values at container
+# start and writes the result to /etc/nginx/issuer-ui-api-proxy.conf.
+#
+# The UI calls the issuer API through this location. nginx adds the API credentials (ISSUER_API_AUTH_USER /
+# ISSUER_API_AUTH_PASSWORD) itself, so they never reach the browser.
+location /api/ {
+    # Browsers attach a saved login to requests that other sites trigger, too. Refuse those, so a malicious page
+    # cannot use a logged-in user's browser to call the API (CSRF).
+    # Browsers always send Origin on POST/PUT/PATCH/DELETE (over plain HTTP too) and pages cannot forge it.
+    # Allowed: GET/HEAD without Origin (the UI's own reads) and any method whose Origin host equals Host.
+    # The scheme is not compared: behind a TLS-terminating ingress $scheme is http while the browser sends https.
+    set $api_csrf "$request_method|$http_origin|$http_host";
+    if ($api_csrf !~ "^(GET\|\||HEAD\|\||[A-Z]+\|https?://([^/|]+)\|\2$)") {
+        return 403;
+    }
+
+    proxy_pass ${ISSUER_UI_API_PROXY_URL}/;
+    proxy_ssl_server_name on;
+
+    # Replaces whatever the browser sent (in secure mode, that is the UI login).
+    proxy_set_header Authorization "Basic ${ISSUER_UI_API_BASIC_AUTH}";
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    # A 401 here means the proxy's API credentials are wrong. Show it as an API error, not as a browser login prompt.
+    proxy_hide_header WWW-Authenticate;
+
+    client_max_body_size 10m;
+    proxy_read_timeout 300s;
+}

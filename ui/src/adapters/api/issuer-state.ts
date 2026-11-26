@@ -2,7 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import { Sorter, buildAuthorizationHeader, serializeSorters } from "src/adapters/api";
+import { Sorter, serializeSorters } from "src/adapters/api";
 import { datetimeParser, getResourceParser, getStrictParser } from "src/adapters/parsers";
 import { Env, IssuerStatus, Transaction, TransactionStatus } from "src/domain";
 import { API_VERSION, QUERY_SEARCH_PARAM } from "src/utils/constants";
@@ -42,9 +42,6 @@ export async function publishState({
   try {
     await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/state/publish`,
     });
@@ -64,9 +61,6 @@ export async function retryPublishState({
   try {
     await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/state/retry`,
     });
@@ -88,9 +82,6 @@ export async function getStatus({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/state/status`,
@@ -124,9 +115,6 @@ export async function getTransactions({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(query !== undefined ? { [QUERY_SEARCH_PARAM]: query } : {}),

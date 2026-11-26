@@ -54,6 +54,11 @@ func main() {
 	}
 	log.Config(cfg.Log.Level, cfg.Log.Mode, os.Stdout)
 
+	if err := cfg.HTTPBasicAuth.Validate(); err != nil {
+		log.Error(ctx, "invalid API auth configuration", "err", err)
+		return
+	}
+
 	storage, err := db.NewStorage(cfg.Database.URL)
 	if err != nil {
 		log.Error(ctx, "cannot connect to database", "err", err)

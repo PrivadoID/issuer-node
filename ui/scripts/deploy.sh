@@ -1,35 +1,27 @@
 #!/bin/sh
+set -eu
+
+# Configure nginx first: it fails fast on missing credentials, before the slow build.
+/bin/sh /app/scripts/configure-nginx.sh /app/deployment
+
 ENV_FILENAME="/app/.env"
 
-# Create .env file
-touch $ENV_FILENAME
-
-# Mapping of issuer-level env variables to app-level
-echo "VITE_API_URL=$ISSUER_SERVER_URL" >> $ENV_FILENAME
-echo "VITE_API_PASSWORD=$ISSUER_API_AUTH_PASSWORD" >> $ENV_FILENAME
-echo "VITE_API_USERNAME=$ISSUER_API_AUTH_USER" >> $ENV_FILENAME
-echo "VITE_ISSUER_LOGO=$ISSUER_ISSUER_LOGO" >> $ENV_FILENAME
-echo "VITE_ISSUER_NAME=$ISSUER_ISSUER_NAME" >> $ENV_FILENAME
-echo "VITE_BUILD_TAG=$ISSUER_UI_BUILD_TAG" >> $ENV_FILENAME
-echo "VITE_WARNING_MESSAGE=$ISSUER_UI_WARNING_MESSAGE" >> $ENV_FILENAME
-echo "VITE_IPFS_GATEWAY_URL=$ISSUER_UI_IPFS_GATEWAY_URL" >> $ENV_FILENAME
-echo "VITE_SCHEMA_EXPLORER_AND_BUILDER_URL=$ISSUER_UI_SCHEMA_EXPLORER_AND_BUILDER_URL" >> $ENV_FILENAME
-echo "VITE_DISPLAY_METHOD_BUILDER_URL=$ISSUER_UI_DISPLAY_METHOD_BUILDER_URL" >> $ENV_FILENAME
-echo "VITE_BASE_URL=$ISSUER_UI_BASE_URL" >> $ENV_FILENAME
-echo "VITE_PAYMENT_PAGES_ENABLED=$ISSUER_UI_PAYMENT_PAGES_ENABLED" >> $ENV_FILENAME
+# Mapping of issuer-level env variables to app-level ones. Everything written here is compiled into the public JS
+# bundle, so never add secrets (the API credentials stay in nginx, see configure-nginx.sh).
+{
+  echo "VITE_ISSUER_LOGO=${ISSUER_ISSUER_LOGO:-}"
+  echo "VITE_ISSUER_NAME=${ISSUER_ISSUER_NAME:-}"
+  echo "VITE_BUILD_TAG=${ISSUER_UI_BUILD_TAG:-}"
+  echo "VITE_WARNING_MESSAGE=${ISSUER_UI_WARNING_MESSAGE:-}"
+  echo "VITE_IPFS_GATEWAY_URL=${ISSUER_UI_IPFS_GATEWAY_URL:-}"
+  echo "VITE_SCHEMA_EXPLORER_AND_BUILDER_URL=${ISSUER_UI_SCHEMA_EXPLORER_AND_BUILDER_URL:-}"
+  echo "VITE_DISPLAY_METHOD_BUILDER_URL=${ISSUER_UI_DISPLAY_METHOD_BUILDER_URL:-}"
+  echo "VITE_BASE_URL=${ISSUER_UI_BASE_URL:-}"
+  echo "VITE_PAYMENT_PAGES_ENABLED=${ISSUER_UI_PAYMENT_PAGES_ENABLED:-}"
+} > "$ENV_FILENAME"
 
 # Build app
 cd /app && npm run build
-
-# Copy nginx config
-# shellcheck disable=SC2039
-if [ "${ISSUER_UI_INSECURE}" == "true" ]; then
-  cp deployment/nginx_insecure.conf /etc/nginx/conf.d/default.conf
-else
-  cp deployment/nginx.conf /etc/nginx/conf.d/default.conf
-  htpasswd -c -b /etc/nginx/.htpasswd $ISSUER_UI_AUTH_USERNAME $ISSUER_UI_AUTH_PASSWORD
-fi
-
 
 # Copy app dist
 cp -r /app/dist/. /usr/share/nginx/html
@@ -38,4 +30,4 @@ cp -r /app/dist/. /usr/share/nginx/html
 rm -rf /app/dist
 
 # Run nginx
-nginx -g 'daemon off;'
+exec nginx -g 'daemon off;'

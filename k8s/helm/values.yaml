@@ -8,6 +8,8 @@ issuernode_repository_tag: latest
 issuernode_ui_repository_image: privadoid/issuernode-ui
 issuernode_ui_repository_tag: latest
 uiPassword: password
+# Keep false. true turns the UI login off, so anyone who can open the UI can use the whole issuer API
+# through it (identities, credentials, keys, payments). Only for public demos.
 issuerUiInsecure: false
 issuerName: "My Issuer!"
 ingressEnabled: true
