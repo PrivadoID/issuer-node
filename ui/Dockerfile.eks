@@ -1,4 +1,3 @@
-# check=skip=SecretsUsedInArgOrEnv
 # ── Stage 1: build ───────────────────────────────────────────────────────────
 FROM node:24.22.1-alpine3.24 AS builder
 
@@ -9,12 +8,10 @@ RUN npm ci --legacy-peer-deps
 
 COPY . .
 
-# Build-time arguments — injected from GitHub secrets/vars in the workflow.
-# Sensitive values (e.g. VITE_API_PASSWORD) are compiled into the JS bundle
-# by Vite and do NOT persist as image ENV vars.
-ARG VITE_API_URL
-ARG VITE_API_PASSWORD
-ARG VITE_API_USERNAME
+# Build-time arguments — injected from GitHub vars in the workflow.
+# Every VITE_* value is compiled into the public JS bundle, so none of them may
+# be a secret. The API credentials are given to nginx at runtime instead
+# (see scripts/configure-nginx.sh).
 ARG VITE_ISSUER_NAME
 ARG VITE_ISSUER_LOGO
 ARG VITE_BUILD_TAG
@@ -25,16 +22,10 @@ ARG VITE_DISPLAY_METHOD_BUILDER_URL
 ARG VITE_BASE_URL
 ARG VITE_PAYMENT_PAGES_ENABLED
 
-RUN test -n "$VITE_API_URL"        || (echo "ERROR: VITE_API_URL is required"        && exit 1) \
- && test -n "$VITE_API_PASSWORD"   || (echo "ERROR: VITE_API_PASSWORD is required"   && exit 1) \
- && test -n "$VITE_API_USERNAME"   || (echo "ERROR: VITE_API_USERNAME is required"   && exit 1) \
- && test -n "$VITE_ISSUER_NAME"    || (echo "ERROR: VITE_ISSUER_NAME is required"    && exit 1) \
- && test -n "$VITE_IPFS_GATEWAY_URL" || (echo "ERROR: VITE_IPFS_GATEWAY_URL is required" && exit 1)
+RUN test -n "$VITE_ISSUER_NAME"      || { echo "ERROR: VITE_ISSUER_NAME is required"; exit 1; } \
+ && test -n "$VITE_IPFS_GATEWAY_URL" || { echo "ERROR: VITE_IPFS_GATEWAY_URL is required"; exit 1; }
 
-RUN echo "VITE_API_URL=$VITE_API_URL" >> .env \
- && echo "VITE_API_PASSWORD=$VITE_API_PASSWORD" >> .env \
- && echo "VITE_API_USERNAME=$VITE_API_USERNAME" >> .env \
- && echo "VITE_ISSUER_NAME=$VITE_ISSUER_NAME" >> .env \
+RUN echo "VITE_ISSUER_NAME=$VITE_ISSUER_NAME" >> .env \
  && echo "VITE_ISSUER_LOGO=$VITE_ISSUER_LOGO" >> .env \
  && echo "VITE_BUILD_TAG=$VITE_BUILD_TAG" >> .env \
  && echo "VITE_WARNING_MESSAGE=$VITE_WARNING_MESSAGE" >> .env \
@@ -53,8 +44,8 @@ RUN apk add --no-cache apache2-utils
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY deployment/ /app/deployment/
-COPY scripts/deploy-eks.sh /app/scripts/deploy-eks.sh
+COPY scripts/deploy-eks.sh scripts/configure-nginx.sh /app/scripts/
 
-RUN chmod +x /app/scripts/deploy-eks.sh
+RUN chmod +x /app/scripts/deploy-eks.sh /app/scripts/configure-nginx.sh
 
 ENTRYPOINT ["/bin/sh", "/app/scripts/deploy-eks.sh"]

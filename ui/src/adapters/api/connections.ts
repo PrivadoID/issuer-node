@@ -2,13 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import {
-  Message,
-  Sorter,
-  buildAuthorizationHeader,
-  messageParser,
-  serializeSorters,
-} from "src/adapters/api";
+import { Message, Sorter, messageParser, serializeSorters } from "src/adapters/api";
 import { credentialParser } from "src/adapters/api/credentials";
 import {
   datetimeParser,
@@ -49,9 +43,6 @@ export async function getConnection({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/connections/${id}`,
@@ -83,9 +74,6 @@ export async function getConnections({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(query !== undefined ? { [QUERY_SEARCH_PARAM]: query } : {}),
@@ -119,9 +107,6 @@ export async function deleteConnection({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       params: new URLSearchParams({
         ...(revokeCredentials ? { revokeCredentials: "true" } : {}),

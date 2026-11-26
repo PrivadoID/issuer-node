@@ -2,7 +2,6 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import { buildAuthorizationHeader } from "src/adapters/api";
 import { getListParser, getStrictParser } from "src/adapters/parsers";
 import {
   Blockchain,
@@ -41,9 +40,6 @@ export async function getIdentities({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities`,
@@ -86,9 +82,6 @@ export async function createIdentity({
     const response = await axios({
       baseURL: env.api.url,
       data: { credentialStatusType, didMetadata, displayName },
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities`,
     });
@@ -122,9 +115,6 @@ export async function getIdentity({
     const response = await axios({
       baseURL: env.api.url,
 
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}`,
@@ -149,9 +139,6 @@ export async function updateIdentityDisplayName({
     await axios({
       baseURL: env.api.url,
       data: { displayName },
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "PATCH",
       url: `${API_VERSION}/identities/${identifier}`,
     });
@@ -194,9 +181,6 @@ export async function getSupportedBlockchains({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/supported-networks`,

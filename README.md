@@ -129,7 +129,7 @@ cp .env-issuer.sample .env-issuer
 *.env-issuer*
 ```bash
 ISSUER_SERVER_URL=<PUBLICLY_ACCESSIBLE_URL_POINTING_TO_ISSUER_SERVER_PORT>
-# API Auth credentials - You can change these values
+# API Auth credentials - required, the API does not start without them. You can change these values
 ISSUER_API_AUTH_USER=user-issuer
 ISSUER_API_AUTH_PASSWORD=password-issuer
 ```
@@ -148,13 +148,18 @@ define the RPCs. that will use.
 ```bash 
 cp .env-ui.sample .env-ui
 ```
-If you want to disable UI authentication just change `ISSUER_UI_INSECURE=true`, or if you want to change ui authentication:
+By default the UI asks for a login: `ISSUER_UI_AUTH_USERNAME` and `ISSUER_UI_AUTH_PASSWORD` are required, and the UI container does not start without them. To change it:
 
 *.env-ui*
 ```bash
 ISSUER_UI_AUTH_USERNAME=<your-username>
 ISSUER_UI_AUTH_PASSWORD=<your-password>
 ```
+
+The UI calls the issuer API through its own server at `/api/`. That server (nginx) adds `ISSUER_API_AUTH_USER` / `ISSUER_API_AUTH_PASSWORD` itself, so the API credentials never reach the browser. By default it sends API calls to `ISSUER_SERVER_URL`; set `ISSUER_UI_API_PROXY_URL` to use another address, e.g. an internal one (the docker-compose files set it to `http://api:3001`).
+
+> [!WARNING]
+> **`ISSUER_UI_INSECURE=true` is for public demos only.** It turns the UI login off: anyone who can open the UI can then use the whole issuer API through it — create identities, issue and revoke credentials, manage keys and payment options. Never use it for an issuer with real users or real data.
 
 5. Run API, UI and infrastructure (Postgres, localstorage and Redis)
 
@@ -224,7 +229,7 @@ make build && make run
 ```
 
 ### Development (UI)
-Local UI development requires the Node.js version in the `engines` field of `ui/package.json` and npm `>= 10`. In `ui/.env`, set the `VITE_*` values: `VITE_API_URL`, `VITE_API_USERNAME` and `VITE_API_PASSWORD` must match `ISSUER_SERVER_URL`, `ISSUER_API_AUTH_USER` and `ISSUER_API_AUTH_PASSWORD` in `.env-issuer`.
+Local UI development requires the Node.js version in the `engines` field of `ui/package.json` and npm `>= 10`. In `ui/.env`, `ISSUER_UI_API_PROXY_URL`, `ISSUER_API_AUTH_USER` and `ISSUER_API_AUTH_PASSWORD` must match `ISSUER_SERVER_URL`, `ISSUER_API_AUTH_USER` and `ISSUER_API_AUTH_PASSWORD` in `.env-issuer`: the dev server proxies `/api` to the API with them, as nginx does in the container. Never put credentials in `VITE_*` variables: those are compiled into the public JS bundle.
 
 ```bash
 cd ui

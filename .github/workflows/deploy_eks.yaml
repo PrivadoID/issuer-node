@@ -207,23 +207,15 @@ jobs:
 
       - name: Debug UI build vars
         env:
-          VITE_API_URL: ${{ vars.ISSUER_NODE_UI_API_URL }}
-          VITE_API_USERNAME: ${{ vars.ISSUER_NODE_UI_API_USERNAME }}
           VITE_ISSUER_NAME: ${{ vars.ISSUER_NODE_UI_ISSUER_NAME }}
           VITE_IPFS_GATEWAY_URL: ${{ vars.ISSUER_NODE_UI_IPFS_GATEWAY_URL }}
         run: |
-          echo "VITE_API_URL=${VITE_API_URL:-(empty)}"
-          echo "VITE_API_USERNAME=${VITE_API_USERNAME:-(empty)}"
           echo "VITE_ISSUER_NAME=${VITE_ISSUER_NAME:-(empty)}"
           echo "VITE_IPFS_GATEWAY_URL=${VITE_IPFS_GATEWAY_URL:-(empty)}"
 
       - name: Build and push UI
         env:
-          # Sensitive — from GitHub secrets
-          VITE_API_PASSWORD: ${{ secrets.ISSUER_NODE_API_AUTH_PASSWORD }}
-          # Non-sensitive — from GitHub environment variables (vars.*)
-          VITE_API_URL: ${{ vars.ISSUER_NODE_UI_API_URL }}
-          VITE_API_USERNAME: ${{ vars.ISSUER_NODE_UI_API_USERNAME }}
+          # VITE_* values are compiled into the public JS bundle: never pass secrets here.
           VITE_ISSUER_NAME: ${{ vars.ISSUER_NODE_UI_ISSUER_NAME }}
           VITE_ISSUER_LOGO: ${{ vars.ISSUER_NODE_UI_ISSUER_LOGO }}
           VITE_BUILD_TAG: ${{ vars.ISSUER_NODE_UI_BUILD_TAG }}
@@ -238,9 +230,6 @@ jobs:
           docker buildx build \
             --platform ${{ matrix.platform }} \
             -f ui/Dockerfile.eks \
-            --build-arg VITE_API_URL="$VITE_API_URL" \
-            --build-arg VITE_API_PASSWORD="$VITE_API_PASSWORD" \
-            --build-arg VITE_API_USERNAME="$VITE_API_USERNAME" \
             --build-arg VITE_ISSUER_NAME="$VITE_ISSUER_NAME" \
             --build-arg VITE_ISSUER_LOGO="$VITE_ISSUER_LOGO" \
             --build-arg VITE_BUILD_TAG="$VITE_BUILD_TAG" \
@@ -344,6 +333,7 @@ jobs:
             --set-literal pendingPublisherIssuerNode.deployment.env.issuerKeyStoreAddress="$SECRET_KEY_STORE_ADDRESS" \
             --set-literal apiIssuerNode.configMap.issuerRedisUrl="$SECRET_CACHE_URL" \
             --set-literal apiIssuerNode.configMap.issuerApiAuthPassword="$SECRET_API_AUTH_PASSWORD" \
+            --set-literal uiIssuerNode.configMap.issuerApiAuthPassword="$SECRET_API_AUTH_PASSWORD" \
             --set-literal global.vaultpwd="$SECRET_VAULT_AUTH_PASSWORD" \
             --set-literal uiPassword="$SECRET_UI_AUTH_PASSWORD" \
             --set-literal issuerResolverFile="$SECRET_RESOLVER_FILE" \

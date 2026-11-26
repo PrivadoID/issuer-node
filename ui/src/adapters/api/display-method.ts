@@ -2,15 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import {
-  ID,
-  IDParser,
-  Message,
-  Sorter,
-  buildAuthorizationHeader,
-  messageParser,
-  serializeSorters,
-} from "src/adapters/api";
+import { ID, IDParser, Message, Sorter, messageParser, serializeSorters } from "src/adapters/api";
 import { getJsonFromUrl } from "src/adapters/json";
 import { getResourceParser, getStrictParser } from "src/adapters/parsers";
 import { DisplayMethod, DisplayMethodMetadata, DisplayMethodType, Env } from "src/domain";
@@ -60,9 +52,6 @@ export async function getDisplayMethods({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(maxResults !== undefined ? { max_results: maxResults.toString() } : {}),
@@ -92,9 +81,6 @@ export async function getDisplayMethod({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/display-method/${displayMethodID}`,
@@ -144,9 +130,6 @@ export async function createDisplayMethod({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/display-method`,
     });
@@ -168,9 +151,6 @@ export async function deleteDisplayMethod({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       url: `${API_VERSION}/identities/${identifier}/display-method/${id}`,
     });
@@ -198,9 +178,6 @@ export async function updateDisplayMethod({
       const response = await axios({
         baseURL: env.api.url,
         data: payload,
-        headers: {
-          Authorization: buildAuthorizationHeader(env),
-        },
         method: "PATCH",
         url: `${API_VERSION}/identities/${identifier}/display-method/${id}`,
       });

@@ -150,6 +150,28 @@ func TestLoad(t *testing.T) {
 	assert.True(t, *cfg.MediaTypeManager.Enabled)
 }
 
+func TestHTTPBasicAuth_Validate(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		auth    HTTPBasicAuth
+		wantErr string
+	}{
+		{name: "both set", auth: HTTPBasicAuth{User: "user", Password: "pass"}},
+		{name: "user missing", auth: HTTPBasicAuth{Password: "pass"}, wantErr: "ISSUER_API_AUTH_USER must be set"},
+		{name: "password missing", auth: HTTPBasicAuth{User: "user"}, wantErr: "ISSUER_API_AUTH_PASSWORD must be set"},
+		{name: "both missing", auth: HTTPBasicAuth{}, wantErr: "ISSUER_API_AUTH_USER and ISSUER_API_AUTH_PASSWORD must be set"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.auth.Validate()
+			if tc.wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.ErrorContains(t, err, tc.wantErr)
+		})
+	}
+}
+
 func TestLoadKmsProviders(t *testing.T) {
 	envVars := initVariables(t)
 	envVars["ISSUER_KMS_BJJ_PROVIDER"] = ""

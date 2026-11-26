@@ -2,15 +2,7 @@ import axios from "axios";
 import { z } from "zod";
 
 import { Response, buildErrorResponse, buildSuccessResponse } from "src/adapters";
-import {
-  ID,
-  IDParser,
-  Message,
-  Sorter,
-  buildAuthorizationHeader,
-  messageParser,
-  serializeSorters,
-} from "src/adapters/api";
+import { ID, IDParser, Message, Sorter, messageParser, serializeSorters } from "src/adapters/api";
 import {
   buildAppError,
   datetimeParser,
@@ -282,9 +274,6 @@ export async function getCredential({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/credentials/${credentialID}`,
@@ -316,9 +305,6 @@ export async function getCredentials({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(credentialSubject !== undefined ? { credentialSubject } : {}),
@@ -423,9 +409,6 @@ export async function createCredential({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/credentials`,
     });
@@ -447,9 +430,6 @@ export async function revokeCredential({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/credentials/revoke/${nonce}`,
     });
@@ -471,9 +451,6 @@ export async function deleteCredential({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       url: `${API_VERSION}/identities/${identifier}/credentials/${id}`,
     });
@@ -548,9 +525,6 @@ export async function getLink({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       signal,
       url: `${API_VERSION}/identities/${identifier}/credentials/links/${linkID}`,
@@ -578,9 +552,6 @@ export async function getLinks({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "GET",
       params: new URLSearchParams({
         ...(query !== undefined ? { [QUERY_SEARCH_PARAM]: query } : {}),
@@ -619,9 +590,6 @@ export async function updateLink({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "PATCH",
       url: `${API_VERSION}/identities/${identifier}/credentials/links/${id}`,
     });
@@ -643,9 +611,6 @@ export async function deleteLink({
   try {
     const response = await axios({
       baseURL: env.api.url,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "DELETE",
       url: `${API_VERSION}/identities/${identifier}/credentials/links/${id}`,
     });
@@ -681,9 +646,6 @@ export async function createLink({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/credentials/links`,
     });
@@ -751,18 +713,12 @@ export async function getIssuedMessages({
     const [universalLinkResponse, deepLinkResponse] = await Promise.all([
       axios({
         baseURL: env.api.url,
-        headers: {
-          Authorization: buildAuthorizationHeader(env),
-        },
         method: "GET",
         signal,
         url: `${API_VERSION}/identities/${identifier}/credentials/${credentialID}/offer`,
       }),
       axios({
         baseURL: env.api.url,
-        headers: {
-          Authorization: buildAuthorizationHeader(env),
-        },
         method: "GET",
         params: { type: "deepLink" },
         signal,
@@ -797,9 +753,6 @@ export async function createAuthCredential({
     const response = await axios({
       baseURL: env.api.url,
       data: payload,
-      headers: {
-        Authorization: buildAuthorizationHeader(env),
-      },
       method: "POST",
       url: `${API_VERSION}/identities/${identifier}/create-auth-credential`,
     });

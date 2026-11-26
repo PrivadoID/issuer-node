@@ -6,6 +6,9 @@ services:
     env_file:
       - ../../.env-issuer
       - ../../.env-ui
+    environment:
+      # The UI's nginx proxies /api/ to the API container and adds the API credentials.
+      ISSUER_UI_API_PROXY_URL: http://api:3001
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost/health"]
       interval: 10s
